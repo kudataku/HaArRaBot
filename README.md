@@ -1,0 +1,2 @@
+# HaArRaBot
+HaArRa Chat Bot
