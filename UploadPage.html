@@ -1,24 +1,68 @@
 <!DOCTYPE html>
 <html>
-  <head><title>Upload Bukti Laporan</title></head>
-  <body>
-    <h2>Upload Bukti Foto/Video</h2>
-    <form id="uploadForm">
-      <input type="file" name="file" accept="image/*,video/*" required>
-      <input type="hidden" name="tiket" value="<?= tiket ?>">
-      <input type="hidden" name="user" value="<?= user ?>">
-      <button type="submit">Upload</button>
-    </form>
-    <div id="response"></div>
-    <script>
-      const form = document.getElementById("uploadForm");
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        const response = await fetch("/exec", { method: "POST", body: formData });
-        const result = await response.text();
-        document.getElementById("response").innerText = result;
-      };
-    </script>
-  </body>
+<head>
+  <base target="_top">
+  <title>Upload Bukti Laporan</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2em;
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+    }
+    input, button {
+      margin-top: 1em;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h2>Unggah Bukti Laporan</h2>
+  <form id="uploadForm">
+    <input type="file" name="file" id="fileInput" accept="image/*,video/*" required><br>
+    <input type="hidden" name="tiket" id="tiketInput">
+    <input type="hidden" name="user" id="userInput">
+    <button type="submit">Upload Sekarang</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    // Ambil parameter dari URL
+    const params = new URLSearchParams(window.location.search);
+    const tiket = params.get("tiket");
+    const user = params.get("user");
+    document.getElementById("tiketInput").value = tiket;
+    document.getElementById("userInput").value = user;
+
+    document.getElementById("uploadForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("tiket", tiket);
+      formData.append("user", user);
+
+      document.getElementById("status").textContent = "⏳ Mengunggah...";
+
+      fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_URL/exec", {
+        method: "POST",
+        body: formData
+      })
+        .then((res) => res.text())
+        .then((text) => {
+          document.getElementById("status").textContent = text;
+        })
+        .catch((err) => {
+          console.error(err);
+          document.getElementById("status").textContent = "❌ Gagal mengunggah.";
+        });
+    });
+  </script>
+</body>
 </html>
