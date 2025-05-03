@@ -1,31 +1,43 @@
 /*********************
- * PENANGAN MENU UTAMA
+ * PENANGAN PENGGUNA
  *********************/
 
-function tanganiMenuUtama(pesan, pengirim, namaPengirim) {
-  const sheetUser = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_USERS);
-  const sheetReport = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_REPORTS);
-
-  pesan = pesan.toLowerCase();
-
-  if (pesan.startsWith("daftar#")) {
-    return daftarPengguna(pesan, pengirim, sheetUser);
-  } else if (pesan.startsWith("lapor#")) {
-    return buatLaporan(pengirim, namaPengirim, pesan, sheetUser, sheetReport);
-  } else if (pesan.startsWith("cek#")) {
-    return cekStatusLaporan(pengirim, pesan, sheetReport);
-  } else if (pesan === "menu") {
-    return tampilkanMenuUtama();
-  } else {
-    return "❓ Perintah tidak dikenali. Ketik *menu* untuk melihat opsi.";
+function daftarPengguna(pesan, pengirim, sheetUser) {
+  const parts = pesan.split("#");
+  if (parts.length < 4) {
+    return "❌ Format salah. Gunakan: *daftar#NIK#Nama#Alamat*";
   }
+
+  const nik = parts[1].trim();
+  const nama = parts[2].trim();
+  const alamat = parts[3].trim();
+
+  if (!/^\d{16}$/.test(nik)) {
+    return "❌ NIK harus terdiri dari 16 digit angka.";
+  }
+
+  const data = sheetUser.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === pengirim) {
+      return "❗ Anda sudah terdaftar.";
+    }
+  }
+
+  sheetUser.appendRow([pengirim, nik, nama, alamat, new Date()]);
+  return `✅ *Pendaftaran berhasil!*\n\n` +
+         `📞 Nomor: *${pengirim}*\n` +
+         `🧑 Nama: *${nama}*\n` +
+         `🏡 Alamat: *${alamat}*\n` +
+         `🆔 NIK: *${nik}*\n\n` +
+         `Silakan lanjutkan dengan ketik *lapor#isi_laporan* untuk menyampaikan laporan.`;
 }
 
-function tampilkanMenuUtama() {
-  return "📱 *MENU UTAMA*\n\n" +
-         "1. *Daftar*: daftar#NIK#Nama#Alamat\n" +
-         "2. *Lapor Masalah*: lapor#isi_laporan\n" +
-         "3. *Cek Laporan*: cek#ID_TIKET\n" +
-         "4. *Menu*: Menampilkan menu ini kembali\n\n" +
-         "Contoh: daftar#3201234567890001#Andi#Jalan Melati No. 1";
+function cariUser(nomor, sheetUser) {
+  const data = sheetUser.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === nomor) {
+      return data[i];
+    }
+  }
+  return null;
 }
