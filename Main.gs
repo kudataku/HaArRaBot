@@ -1,11 +1,33 @@
+/*********************
+ * ENTRY POINT UTAMA
+ *********************/
+
 function doPost(e) {
-  const msg = JSON.parse(e.postData.contents);
-  const senderNumber = msg.wa_number;
-  const senderName = msg.wa_name;
-  const senderMessage = msg.wa_text;
+  const data = JSON.parse(e.postData.contents);
+  const senderNumber = data.sender;
+  const senderName = data.senderName;
+  const message = data.message?.trim();
 
-  const sheetUser = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Users");
-  const sheetReport = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Reports");
+  const sheetUser = SpreadsheetApp.getActive().getSheetByName(NAMA_SHEET_USER);
+  const sheetReport = SpreadsheetApp.getActive().getSheetByName(NAMA_SHEET_LAPORAN);
 
-  return ContentService.createTextOutput(handleMessage(senderNumber, senderName, senderMessage, sheetUser, sheetReport));
+  if (!sheetUser || !sheetReport) {
+    return ContentService.createTextOutput("Sheet tidak ditemukan.");
+  }
+
+  const balasan = tanganiPesan(senderNumber, senderName, message, sheetUser, sheetReport);
+  return ContentService.createTextOutput(balasan);
+}
+
+function tanganiPesan(senderNumber, senderName, message, sheetUser, sheetReport) {
+  const pesan = message.toLowerCase();
+  if (pesan.startsWith("daftar#")) {
+    return prosesPendaftaran(senderNumber, senderName, message, sheetUser);
+  } else if (pesan.startsWith("lapor#")) {
+    return buatLaporan(senderNumber, senderName, message, sheetUser, sheetReport);
+  } else if (pesan.startsWith("cek#")) {
+    return cekStatusLaporan(senderNumber, message, sheetReport);
+  } else {
+    return tampilkanMenu();
+  }
 }
