@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head><title>Upload Bukti Laporan</title></head>
+  <body>
+    <h2>Upload Bukti Foto/Video</h2>
+    <form id="uploadForm">
+      <input type="file" name="file" accept="image/*,video/*" required>
+      <input type="hidden" name="tiket" value="<?= tiket ?>">
+      <input type="hidden" name="user" value="<?= user ?>">
+      <button type="submit">Upload</button>
+    </form>
+    <div id="response"></div>
+    <script>
+      const form = document.getElementById("uploadForm");
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const response = await fetch("/exec", { method: "POST", body: formData });
+        const result = await response.text();
+        document.getElementById("response").innerText = result;
+      };
+    </script>
+  </body>
+</html>
